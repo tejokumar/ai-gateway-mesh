@@ -11,7 +11,13 @@ pinned: false
 
 # AI Gateway Mesh Demo
 
-Set these environment variables in Space settings:
+The Space can run in two modes.
+
+Without `AI_GATEWAY_BASE_URL`, it runs in self-contained demo mode and simulates
+the gateway routing decision.
+
+To connect it to a live gateway, set these environment variables in Space
+settings:
 
 ```text
 AI_GATEWAY_BASE_URL=https://your-gateway-url
