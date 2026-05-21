@@ -1,0 +1,9 @@
+bin/
+dist/
+.env
+*.log
+.DS_Store
+.gocache/
+.uv-cache/
+__pycache__/
+*.pyc

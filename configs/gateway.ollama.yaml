@@ -1,0 +1,68 @@
+server:
+  port: 8080
+  read_timeout_ms: 30000
+  write_timeout_ms: 120000
+
+routing:
+  default_backend: ollama-local
+
+backends:
+  - name: ollama-local
+    type: openai_compatible
+    base_url: http://host.docker.internal:11434/v1
+    api_key_env: OLLAMA_API_KEY
+    model: llama3.2:1b
+    timeout_ms: 120000
+    max_retries: 0
+    fallback: general-small
+
+  - name: general-small
+    type: openai_compatible
+    base_url: http://mock-vllm-small:8000/v1
+    api_key_env: SMALL_MODEL_API_KEY
+    model: mistral-small
+    timeout_ms: 60000
+    max_retries: 1
+    fallback: general-large
+
+  - name: general-large
+    type: openai_compatible
+    base_url: http://mock-vllm-large:8000/v1
+    api_key_env: LARGE_MODEL_API_KEY
+    model: llama-large
+    timeout_ms: 90000
+    max_retries: 0
+
+  - name: coding-model
+    type: openai_compatible
+    base_url: http://mock-vllm-coder:8000/v1
+    api_key_env: CODER_MODEL_API_KEY
+    model: deepseek-coder
+    timeout_ms: 90000
+    max_retries: 1
+    fallback: general-large
+
+policies:
+  - name: coding-route
+    priority: 10
+    condition:
+      contains_any:
+        - code
+        - golang
+        - kubernetes
+        - istio
+        - envoy
+        - python
+    backend: coding-model
+
+  - name: ollama-default-route
+    priority: 20
+    condition:
+      max_prompt_tokens: 4096
+    backend: ollama-local
+
+  - name: large-prompt-route
+    priority: 30
+    condition:
+      min_prompt_tokens: 4097
+    backend: general-large

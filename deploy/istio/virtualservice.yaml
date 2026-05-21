@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: ai-gateway
+  namespace: ai-gateway-mesh
+spec:
+  hosts:
+    - ai-gateway.local
+  gateways:
+    - ai-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /v1/chat/completions
+        - uri:
+            prefix: /healthz
+        - uri:
+            prefix: /readyz
+        - uri:
+            prefix: /metrics
+        - uri:
+            prefix: /admin/
+      route:
+        - destination:
+            host: ai-gateway.ai-gateway-mesh.svc.cluster.local
+            port:
+              number: 8080

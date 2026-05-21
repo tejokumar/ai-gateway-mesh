@@ -1,0 +1,7 @@
+.git
+.gocache
+.uv-cache
+**/__pycache__
+**/*.pyc
+.DS_Store
+tmp

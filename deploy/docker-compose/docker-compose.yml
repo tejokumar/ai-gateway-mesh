@@ -1,0 +1,81 @@
+services:
+  gateway:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SMALL_MODEL_API_KEY: demo
+      LARGE_MODEL_API_KEY: demo
+      CODER_MODEL_API_KEY: demo
+      CONFIG_PATH: /app/configs/gateway.yaml
+    volumes:
+      - ../../configs:/app/configs
+    depends_on:
+      mock-vllm-small:
+        condition: service_healthy
+      mock-vllm-large:
+        condition: service_healthy
+      mock-vllm-coder:
+        condition: service_healthy
+
+  mock-vllm-small:
+    build:
+      context: ../../tests/mock-openai-server
+    environment:
+      BACKEND_NAME: general-small
+    ports:
+      - "8101:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mock-vllm-large:
+    build:
+      context: ../../tests/mock-openai-server
+    environment:
+      BACKEND_NAME: general-large
+    ports:
+      - "8102:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mock-vllm-coder:
+    build:
+      context: ../../tests/mock-openai-server
+    environment:
+      BACKEND_NAME: coding-model
+    ports:
+      - "8103:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../../deploy/docker-compose/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3300:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ai-gateway
+      GF_USERS_DEFAULT_THEME: light
+    volumes:
+      - ../../deploy/docker-compose/grafana/provisioning:/etc/grafana/provisioning
+      - ../../deploy/docker-compose/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus

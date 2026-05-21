@@ -1,0 +1,4 @@
+services:
+  mock-vllm-small:
+    environment:
+      MOCK_STATUS: 503

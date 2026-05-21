@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-gateway-config
+  namespace: ai-gateway-mesh
+data:
+  gateway.yaml: |
+    server:
+      port: 8080
+      read_timeout_ms: 30000
+      write_timeout_ms: 120000
+
+    routing:
+      default_backend: general-small
+
+    backends:
+      - name: general-small
+        type: openai_compatible
+        base_url: http://vllm-small.ai-gateway-mesh.svc.cluster.local:8000/v1
+        api_key_env: SMALL_MODEL_API_KEY
+        model: mistral-small
+        timeout_ms: 60000
+        max_retries: 1
+        fallback: general-large
+
+      - name: general-large
+        type: openai_compatible
+        base_url: http://vllm-large.ai-gateway-mesh.svc.cluster.local:8000/v1
+        api_key_env: LARGE_MODEL_API_KEY
+        model: llama-large
+        timeout_ms: 90000
+        max_retries: 0
+
+      - name: coding-model
+        type: openai_compatible
+        base_url: http://vllm-coder.ai-gateway-mesh.svc.cluster.local:8000/v1
+        api_key_env: CODER_MODEL_API_KEY
+        model: deepseek-coder
+        timeout_ms: 90000
+        max_retries: 1
+        fallback: general-large
+
+    policies:
+      - name: coding-route
+        priority: 10
+        condition:
+          contains_any:
+            - code
+            - golang
+            - kubernetes
+            - istio
+            - envoy
+            - python
+        backend: coding-model
+
+      - name: small-prompt-route
+        priority: 20
+        condition:
+          max_prompt_tokens: 512
+        backend: general-small
+
+      - name: large-prompt-route
+        priority: 30
+        condition:
+          min_prompt_tokens: 513
+        backend: general-large

@@ -1,0 +1,7 @@
+services:
+  gateway:
+    environment:
+      CONFIG_PATH: /app/configs/gateway.ollama.yaml
+      OLLAMA_API_KEY: ""
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
