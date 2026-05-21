@@ -8,7 +8,7 @@ GOCACHE ?= $(CURDIR)/.gocache
 
 export GOCACHE
 
-.PHONY: help test vet validate docker-build mock-docker-build compose-config k8s-validate compose-up compose-down compose-fallback compose-ollama demo-traffic demo-traffic-ollama ollama-pull
+.PHONY: help test vet validate docker-build mock-docker-build compose-config k8s-validate k8s-up k8s-smoke k8s-port-forward k8s-down k8s-demo compose-up compose-down compose-fallback compose-ollama demo-traffic demo-traffic-ollama ollama-pull
 
 help:
 	@echo "AI Gateway Mesh targets:"
@@ -18,6 +18,11 @@ help:
 	@echo "  make docker-build          Build the gateway Docker image"
 	@echo "  make mock-docker-build     Build the mock OpenAI backend image"
 	@echo "  make k8s-validate          Render Kubernetes and Istio manifests"
+	@echo "  make k8s-up                Create/update local kind demo deployment"
+	@echo "  make k8s-smoke             Verify deployed Kubernetes gateway"
+	@echo "  make k8s-port-forward      Forward gateway to http://127.0.0.1:18080"
+	@echo "  make k8s-down              Delete the local kind demo cluster"
+	@echo "  make k8s-demo              Run up, smoke test, and down"
 	@echo "  make compose-up            Start mock backend demo stack"
 	@echo "  make compose-fallback      Start stack with forced fallback demo"
 	@echo "  make compose-ollama        Start stack with Ollama overlay"
@@ -54,6 +59,20 @@ k8s-validate:
 	else \
 		echo "kubectl not found; skipping Kubernetes manifest render validation"; \
 	fi
+
+k8s-up:
+	sh scripts/k8s-up.sh
+
+k8s-smoke:
+	sh scripts/k8s-smoke.sh
+
+k8s-port-forward:
+	kubectl -n ai-gateway-mesh port-forward svc/ai-gateway 18080:8080
+
+k8s-down:
+	sh scripts/k8s-down.sh
+
+k8s-demo: k8s-up k8s-smoke k8s-down
 
 compose-up:
 	$(COMPOSE) up --build

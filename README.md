@@ -204,6 +204,28 @@ curl http://localhost:8080/v1/chat/completions \
   -d '{"model":"auto","messages":[{"role":"user","content":"Explain kubernetes service mesh"}],"stream":false}'
 ```
 
+Or run the local kind workflow through Make:
+
+```bash
+make k8s-up
+make k8s-smoke
+make k8s-port-forward
+```
+
+For a disposable end-to-end demo that creates the kind cluster, deploys the
+gateway and mock backends, sends smoke-test traffic, stops the temporary
+port-forward, and deletes the cluster:
+
+```bash
+make k8s-demo
+```
+
+To delete the local kind cluster manually:
+
+```bash
+make k8s-down
+```
+
 ## Istio Demo
 
 Istio is optional and should be applied after the Kubernetes demo works.
