@@ -3,6 +3,7 @@ services:
     runtime: docker
     name: ai-gateway-mesh
     plan: starter
+    autoDeploy: false
     healthCheckPath: /healthz
     envVars:
       - key: CONFIG_PATH
@@ -33,6 +34,7 @@ services:
     runtime: docker
     name: ai-gateway-mock-small
     plan: starter
+    autoDeploy: false
     dockerfilePath: tests/mock-openai-server/Dockerfile
     dockerContext: tests/mock-openai-server
     envVars:
@@ -45,6 +47,7 @@ services:
     runtime: docker
     name: ai-gateway-mock-large
     plan: starter
+    autoDeploy: false
     dockerfilePath: tests/mock-openai-server/Dockerfile
     dockerContext: tests/mock-openai-server
     envVars:
@@ -57,6 +60,7 @@ services:
     runtime: docker
     name: ai-gateway-mock-coder
     plan: starter
+    autoDeploy: false
     dockerfilePath: tests/mock-openai-server/Dockerfile
     dockerContext: tests/mock-openai-server
     envVars:

@@ -297,6 +297,8 @@ make k8s-demo-istio
 
 ## Public Demo Deployment
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tejokumar/ai-gateway-mesh)
+
 The repository includes a Render Blueprint at `render.yaml` for a public demo
 gateway plus three private mock OpenAI-compatible backend services.
 
