@@ -1,5 +1,7 @@
 # AI Gateway Mesh
 
+[![CI](https://github.com/tejokumar/ai-gateway-mesh/actions/workflows/ci.yml/badge.svg)](https://github.com/tejokumar/ai-gateway-mesh/actions/workflows/ci.yml)
+
 AI Gateway Mesh is a Kubernetes-native LLM inference gateway built for production AI infrastructure.
 
 It routes OpenAI-compatible chat completion requests across multiple model backends such as vLLM, Hugging Face TGI, Ollama, or remote APIs.
@@ -47,7 +49,7 @@ The gateway decides which model backend should serve the request.
 Run the gateway directly:
 
 ```bash
-go test ./...
+make test
 go run ./cmd/gateway
 ```
 
@@ -67,7 +69,7 @@ Backend API key environment variable names are redacted from admin responses.
 Run the full local demo with mock OpenAI-compatible backends:
 
 ```bash
-docker compose -f deploy/docker-compose/docker-compose.yml up --build
+make compose-up
 ```
 
 Local service URLs:
@@ -115,7 +117,7 @@ curl -N http://localhost:8080/v1/chat/completions \
 To generate a quick burst of dashboard traffic:
 
 ```bash
-sh scripts/demo-traffic.sh
+make demo-traffic
 ```
 
 To demo fallback deterministically, start Compose with the fallback override. It forces the
@@ -123,10 +125,7 @@ small backend to return `503`, so the gateway should retry/fallback to `general-
 return `x-ai-gateway-fallback-used: true`.
 
 ```bash
-docker compose \
-  -f deploy/docker-compose/docker-compose.yml \
-  -f deploy/docker-compose/docker-compose.fallback.yml \
-  up --build
+make compose-fallback
 ```
 
 ## Optional Ollama Backend
@@ -136,17 +135,14 @@ real local Ollama model, install Ollama, pull a model, and make sure Ollama is
 listening on your host at port `11434`.
 
 ```bash
-ollama pull llama3.2:1b
+make ollama-pull
 ollama serve
 ```
 
 Then start the gateway with the Ollama overlay:
 
 ```bash
-docker compose \
-  -f deploy/docker-compose/docker-compose.yml \
-  -f deploy/docker-compose/docker-compose.ollama.yml \
-  up --build
+make compose-ollama
 ```
 
 The overlay uses `configs/gateway.ollama.yaml`, where:
@@ -159,5 +155,11 @@ The overlay uses `configs/gateway.ollama.yaml`, where:
 Try the real backend directly:
 
 ```bash
-sh scripts/demo-traffic-ollama.sh
+make demo-traffic-ollama
+```
+
+Stop the local stack:
+
+```bash
+make compose-down
 ```
