@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test and Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Go test
+        run: go test ./...
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Validate Python files
+        run: |
+          python3 -m py_compile \
+            tests/mock-openai-server/server.py \
+            demo/huggingface-space/app.py
+
+      - name: Validate Grafana dashboard JSON
+        run: python3 -m json.tool deploy/docker-compose/grafana/dashboards/ai-gateway-mesh.json >/tmp/ai-gateway-mesh-dashboard.json
+
+      - name: Validate Docker Compose configs
+        run: |
+          docker compose -f deploy/docker-compose/docker-compose.yml config >/tmp/compose-default.yml
+          docker compose \
+            -f deploy/docker-compose/docker-compose.yml \
+            -f deploy/docker-compose/docker-compose.fallback.yml \
+            config >/tmp/compose-fallback.yml
+          docker compose \
+            -f deploy/docker-compose/docker-compose.yml \
+            -f deploy/docker-compose/docker-compose.ollama.yml \
+            config >/tmp/compose-ollama.yml
+
+      - name: Build gateway image
+        run: docker build -t ai-gateway-mesh:ci .
