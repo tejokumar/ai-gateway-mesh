@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 BACKEND_NAME = os.getenv("BACKEND_NAME", "mock-backend")
 MOCK_STATUS = int(os.getenv("MOCK_STATUS", "200"))
 MOCK_DELAY_MS = int(os.getenv("MOCK_DELAY_MS", "0"))
+PORT = int(os.getenv("PORT", "8000"))
 
 class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -121,4 +122,4 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
-HTTPServer(("0.0.0.0", 8000), Handler).serve_forever()
+HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()

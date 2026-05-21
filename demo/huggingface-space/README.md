@@ -17,3 +17,6 @@ Set these environment variables in Space settings:
 AI_GATEWAY_BASE_URL=https://your-gateway-url
 AI_GATEWAY_API_KEY=demo-key
 ```
+
+For the Render demo blueprint in this repository, use the public URL of the
+`ai-gateway-mesh` Render web service as `AI_GATEWAY_BASE_URL`.

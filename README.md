@@ -294,3 +294,27 @@ For a disposable end-to-end Istio demo:
 ```bash
 make k8s-demo-istio
 ```
+
+## Public Demo Deployment
+
+The repository includes a Render Blueprint at `render.yaml` for a public demo
+gateway plus three private mock OpenAI-compatible backend services.
+
+Render will deploy:
+
+- `ai-gateway-mesh` as a public Docker web service
+- `ai-gateway-mock-small` as a private service
+- `ai-gateway-mock-large` as a private service
+- `ai-gateway-mock-coder` as a private service
+
+The gateway uses `configs/gateway.render.yaml`, which expands backend private
+hostnames from Render environment variables such as `SMALL_BACKEND_HOSTPORT`.
+
+After the Render Blueprint deploys, set the Hugging Face Space variables:
+
+```text
+AI_GATEWAY_BASE_URL=https://<your-render-service>.onrender.com
+AI_GATEWAY_API_KEY=demo-key
+```
+
+Then the Gradio demo in `demo/huggingface-space` can call the public gateway.

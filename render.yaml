@@ -1,0 +1,66 @@
+services:
+  - type: web
+    runtime: docker
+    name: ai-gateway-mesh
+    plan: starter
+    healthCheckPath: /healthz
+    envVars:
+      - key: CONFIG_PATH
+        value: configs/gateway.render.yaml
+      - key: SMALL_MODEL_API_KEY
+        value: demo
+      - key: LARGE_MODEL_API_KEY
+        value: demo
+      - key: CODER_MODEL_API_KEY
+        value: demo
+      - key: SMALL_BACKEND_HOSTPORT
+        fromService:
+          type: pserv
+          name: ai-gateway-mock-small
+          property: hostport
+      - key: LARGE_BACKEND_HOSTPORT
+        fromService:
+          type: pserv
+          name: ai-gateway-mock-large
+          property: hostport
+      - key: CODER_BACKEND_HOSTPORT
+        fromService:
+          type: pserv
+          name: ai-gateway-mock-coder
+          property: hostport
+
+  - type: pserv
+    runtime: docker
+    name: ai-gateway-mock-small
+    plan: starter
+    dockerfilePath: tests/mock-openai-server/Dockerfile
+    dockerContext: tests/mock-openai-server
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: BACKEND_NAME
+        value: general-small
+
+  - type: pserv
+    runtime: docker
+    name: ai-gateway-mock-large
+    plan: starter
+    dockerfilePath: tests/mock-openai-server/Dockerfile
+    dockerContext: tests/mock-openai-server
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: BACKEND_NAME
+        value: general-large
+
+  - type: pserv
+    runtime: docker
+    name: ai-gateway-mock-coder
+    plan: starter
+    dockerfilePath: tests/mock-openai-server/Dockerfile
+    dockerContext: tests/mock-openai-server
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: BACKEND_NAME
+        value: coding-model
