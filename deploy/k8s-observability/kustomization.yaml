@@ -1,0 +1,22 @@
+namespace: ai-gateway-mesh
+
+resources:
+  - prometheus.yaml
+  - grafana.yaml
+
+configMapGenerator:
+  - name: prometheus-config
+    files:
+      - prometheus.yml
+  - name: grafana-datasources
+    files:
+      - prometheus.yaml=grafana-datasource.yaml
+  - name: grafana-dashboard-providers
+    files:
+      - dashboards.yaml=grafana-dashboard-provider.yaml
+  - name: grafana-dashboard-ai-gateway
+    files:
+      - ai-gateway-mesh.json=ai-gateway-mesh-dashboard.json
+
+generatorOptions:
+  disableNameSuffixHash: true

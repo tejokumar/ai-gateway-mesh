@@ -226,6 +226,43 @@ To delete the local kind cluster manually:
 make k8s-down
 ```
 
+### Kubernetes Observability
+
+Deploy Prometheus and Grafana into the same local Kubernetes namespace:
+
+```bash
+make k8s-observability-up
+make k8s-observability-smoke
+make k8s-grafana-port-forward
+```
+
+Open Grafana at `http://127.0.0.1:3301`.
+
+Login:
+
+- username: `admin`
+- password: `ai-gateway`
+
+Prometheus can be forwarded separately:
+
+```bash
+make k8s-prometheus-port-forward
+```
+
+Then open `http://127.0.0.1:19090`.
+
+To remove only Prometheus and Grafana while keeping the gateway running:
+
+```bash
+make k8s-observability-down
+```
+
+For a disposable end-to-end demo with observability:
+
+```bash
+make k8s-demo-observability
+```
+
 ## Istio Demo
 
 Istio is optional and should be applied after the Kubernetes demo works.

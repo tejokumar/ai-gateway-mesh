@@ -8,7 +8,7 @@ GOCACHE ?= $(CURDIR)/.gocache
 
 export GOCACHE
 
-.PHONY: help test vet validate docker-build mock-docker-build compose-config k8s-validate k8s-up k8s-smoke k8s-port-forward k8s-down k8s-demo compose-up compose-down compose-fallback compose-ollama demo-traffic demo-traffic-ollama ollama-pull
+.PHONY: help test vet validate docker-build mock-docker-build compose-config k8s-validate k8s-up k8s-smoke k8s-port-forward k8s-observability-up k8s-observability-smoke k8s-grafana-port-forward k8s-prometheus-port-forward k8s-observability-down k8s-down k8s-demo k8s-demo-observability compose-up compose-down compose-fallback compose-ollama demo-traffic demo-traffic-ollama ollama-pull
 
 help:
 	@echo "AI Gateway Mesh targets:"
@@ -21,8 +21,14 @@ help:
 	@echo "  make k8s-up                Create/update local kind demo deployment"
 	@echo "  make k8s-smoke             Verify deployed Kubernetes gateway"
 	@echo "  make k8s-port-forward      Forward gateway to http://127.0.0.1:18080"
+	@echo "  make k8s-observability-up  Deploy Prometheus and Grafana to Kubernetes"
+	@echo "  make k8s-observability-smoke Verify Kubernetes Prometheus and Grafana"
+	@echo "  make k8s-grafana-port-forward Forward Grafana to http://127.0.0.1:3301"
+	@echo "  make k8s-prometheus-port-forward Forward Prometheus to http://127.0.0.1:19090"
+	@echo "  make k8s-observability-down Remove Kubernetes Prometheus and Grafana"
 	@echo "  make k8s-down              Delete the local kind demo cluster"
 	@echo "  make k8s-demo              Run up, smoke test, and down"
+	@echo "  make k8s-demo-observability Run full disposable K8s observability demo"
 	@echo "  make compose-up            Start mock backend demo stack"
 	@echo "  make compose-fallback      Start stack with forced fallback demo"
 	@echo "  make compose-ollama        Start stack with Ollama overlay"
@@ -55,6 +61,7 @@ compose-config:
 k8s-validate:
 	@if command -v kubectl >/dev/null 2>&1; then \
 		kubectl kustomize deploy/k8s >/tmp/ai-gateway-k8s.yaml; \
+		kubectl kustomize deploy/k8s-observability >/tmp/ai-gateway-k8s-observability.yaml; \
 		kubectl kustomize deploy/istio >/tmp/ai-gateway-istio.yaml; \
 	else \
 		echo "kubectl not found; skipping Kubernetes manifest render validation"; \
@@ -69,10 +76,27 @@ k8s-smoke:
 k8s-port-forward:
 	kubectl -n ai-gateway-mesh port-forward svc/ai-gateway 18080:8080
 
+k8s-observability-up:
+	sh scripts/k8s-observability-up.sh
+
+k8s-observability-smoke:
+	sh scripts/k8s-observability-smoke.sh
+
+k8s-grafana-port-forward:
+	kubectl -n ai-gateway-mesh port-forward svc/grafana 3301:3000
+
+k8s-prometheus-port-forward:
+	kubectl -n ai-gateway-mesh port-forward svc/prometheus 19090:9090
+
+k8s-observability-down:
+	sh scripts/k8s-observability-down.sh
+
 k8s-down:
 	sh scripts/k8s-down.sh
 
 k8s-demo: k8s-up k8s-smoke k8s-down
+
+k8s-demo-observability: k8s-up k8s-observability-up k8s-smoke k8s-observability-smoke k8s-down
 
 compose-up:
 	$(COMPOSE) up --build
