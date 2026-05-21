@@ -32,6 +32,14 @@ func main() {
 		logger.Error("failed to load config", "path", configPath, "error", err)
 		os.Exit(1)
 	}
+	if port := os.Getenv("PORT"); port != "" {
+		parsedPort, err := parsePort(port)
+		if err != nil {
+			logger.Error("invalid PORT", "error", err)
+			os.Exit(1)
+		}
+		cfg.Server.Port = parsedPort
+	}
 
 	registry := prometheus.NewRegistry()
 	m := metrics.New(registry)
@@ -82,4 +90,15 @@ func durationMS(value int, fallback time.Duration) time.Duration {
 		return fallback
 	}
 	return time.Duration(value) * time.Millisecond
+}
+
+func parsePort(value string) (int, error) {
+	var port int
+	if _, err := fmt.Sscanf(value, "%d", &port); err != nil {
+		return 0, fmt.Errorf("parse PORT: %w", err)
+	}
+	if port < 1 || port > 65535 {
+		return 0, fmt.Errorf("PORT must be between 1 and 65535")
+	}
+	return port, nil
 }

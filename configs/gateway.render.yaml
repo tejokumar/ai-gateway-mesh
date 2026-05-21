@@ -1,5 +1,5 @@
 server:
-  port: 10000
+  port: 8080
   read_timeout_ms: 30000
   write_timeout_ms: 120000
 
