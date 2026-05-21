@@ -8,7 +8,7 @@ GOCACHE ?= $(CURDIR)/.gocache
 
 export GOCACHE
 
-.PHONY: help test vet validate docker-build mock-docker-build compose-config k8s-validate k8s-up k8s-smoke k8s-port-forward k8s-observability-up k8s-observability-smoke k8s-grafana-port-forward k8s-prometheus-port-forward k8s-observability-down k8s-down k8s-demo k8s-demo-observability compose-up compose-down compose-fallback compose-ollama demo-traffic demo-traffic-ollama ollama-pull
+.PHONY: help test vet validate docker-build mock-docker-build compose-config k8s-validate k8s-up k8s-smoke k8s-port-forward k8s-observability-up k8s-observability-smoke k8s-grafana-port-forward k8s-prometheus-port-forward k8s-observability-down istio-up istio-smoke istio-port-forward istio-down k8s-down k8s-demo k8s-demo-observability k8s-demo-istio compose-up compose-down compose-fallback compose-ollama demo-traffic demo-traffic-ollama ollama-pull
 
 help:
 	@echo "AI Gateway Mesh targets:"
@@ -26,9 +26,14 @@ help:
 	@echo "  make k8s-grafana-port-forward Forward Grafana to http://127.0.0.1:3301"
 	@echo "  make k8s-prometheus-port-forward Forward Prometheus to http://127.0.0.1:19090"
 	@echo "  make k8s-observability-down Remove Kubernetes Prometheus and Grafana"
+	@echo "  make istio-up               Install Istio and apply gateway routing"
+	@echo "  make istio-smoke            Verify traffic through Istio ingress"
+	@echo "  make istio-port-forward     Forward Istio ingress to http://127.0.0.1:18081"
+	@echo "  make istio-down             Remove Istio routing and uninstall Istio"
 	@echo "  make k8s-down              Delete the local kind demo cluster"
 	@echo "  make k8s-demo              Run up, smoke test, and down"
 	@echo "  make k8s-demo-observability Run full disposable K8s observability demo"
+	@echo "  make k8s-demo-istio         Run full disposable K8s + Istio demo"
 	@echo "  make compose-up            Start mock backend demo stack"
 	@echo "  make compose-fallback      Start stack with forced fallback demo"
 	@echo "  make compose-ollama        Start stack with Ollama overlay"
@@ -91,12 +96,26 @@ k8s-prometheus-port-forward:
 k8s-observability-down:
 	sh scripts/k8s-observability-down.sh
 
+istio-up:
+	sh scripts/istio-up.sh
+
+istio-smoke:
+	sh scripts/istio-smoke.sh
+
+istio-port-forward:
+	kubectl -n istio-system port-forward svc/istio-ingressgateway 18081:80
+
+istio-down:
+	sh scripts/istio-down.sh
+
 k8s-down:
 	sh scripts/k8s-down.sh
 
 k8s-demo: k8s-up k8s-smoke k8s-down
 
 k8s-demo-observability: k8s-up k8s-observability-up k8s-smoke k8s-observability-smoke k8s-down
+
+k8s-demo-istio: k8s-up istio-up istio-smoke istio-down k8s-down
 
 compose-up:
 	$(COMPOSE) up --build

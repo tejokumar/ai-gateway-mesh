@@ -268,9 +268,29 @@ make k8s-demo-observability
 Istio is optional and should be applied after the Kubernetes demo works.
 
 ```bash
-istioctl install --set profile=demo -y
-kubectl apply -k deploy/istio
+make k8s-up
+make istio-up
+make istio-smoke
 ```
 
 The Istio manifests expose the gateway through `ai-gateway.local` using the
 cluster's Istio ingress gateway.
+
+To keep the ingress open locally:
+
+```bash
+make istio-port-forward
+curl -H "Host: ai-gateway.local" http://127.0.0.1:18081/healthz
+```
+
+To remove only Istio while keeping the Kubernetes gateway running:
+
+```bash
+make istio-down
+```
+
+For a disposable end-to-end Istio demo:
+
+```bash
+make k8s-demo-istio
+```
