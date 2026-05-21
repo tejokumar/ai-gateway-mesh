@@ -163,3 +163,55 @@ Stop the local stack:
 ```bash
 make compose-down
 ```
+
+## Kubernetes Demo
+
+The Kubernetes manifests are self-contained for a local mock-backend demo. They
+deploy the gateway plus three mock OpenAI-compatible backend services:
+
+- `vllm-small`
+- `vllm-large`
+- `vllm-coder`
+
+Build images for a local cluster:
+
+```bash
+make docker-build
+make mock-docker-build
+```
+
+If you use `kind`, load the images into the cluster:
+
+```bash
+kind load docker-image ai-gateway-mesh:local
+kind load docker-image ai-gateway-mock-openai:latest
+```
+
+Validate and apply manifests:
+
+```bash
+make k8s-validate
+kubectl apply -k deploy/k8s
+kubectl -n ai-gateway-mesh port-forward svc/ai-gateway 8080:8080
+```
+
+Then call the gateway:
+
+```bash
+curl http://localhost:8080/healthz
+curl http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"auto","messages":[{"role":"user","content":"Explain kubernetes service mesh"}],"stream":false}'
+```
+
+## Istio Demo
+
+Istio is optional and should be applied after the Kubernetes demo works.
+
+```bash
+istioctl install --set profile=demo -y
+kubectl apply -k deploy/istio
+```
+
+The Istio manifests expose the gateway through `ai-gateway.local` using the
+cluster's Istio ingress gateway.

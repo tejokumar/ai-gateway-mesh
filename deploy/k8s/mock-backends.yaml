@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-small
+  namespace: ai-gateway-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-small
+  template:
+    metadata:
+      labels:
+        app: vllm-small
+    spec:
+      containers:
+        - name: mock-openai
+          image: ai-gateway-mock-openai:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BACKEND_NAME
+              value: general-small
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-small
+  namespace: ai-gateway-mesh
+spec:
+  selector:
+    app: vllm-small
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-large
+  namespace: ai-gateway-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-large
+  template:
+    metadata:
+      labels:
+        app: vllm-large
+    spec:
+      containers:
+        - name: mock-openai
+          image: ai-gateway-mock-openai:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BACKEND_NAME
+              value: general-large
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-large
+  namespace: ai-gateway-mesh
+spec:
+  selector:
+    app: vllm-large
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-coder
+  namespace: ai-gateway-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-coder
+  template:
+    metadata:
+      labels:
+        app: vllm-coder
+    spec:
+      containers:
+        - name: mock-openai
+          image: ai-gateway-mock-openai:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BACKEND_NAME
+              value: coding-model
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-coder
+  namespace: ai-gateway-mesh
+spec:
+  selector:
+    app: vllm-coder
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

@@ -13,9 +13,10 @@ spec:
       labels:
         app: ai-gateway
     spec:
+      serviceAccountName: ai-gateway
       containers:
         - name: gateway
-          image: ai-gateway-mesh:latest
+          image: ai-gateway-mesh:local
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

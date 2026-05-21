@@ -52,5 +52,14 @@ jobs:
             -f deploy/docker-compose/docker-compose.ollama.yml \
             config >/tmp/compose-ollama.yml
 
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Validate Kubernetes manifests
+        run: make k8s-validate
+
       - name: Build gateway image
         run: docker build -t ai-gateway-mesh:ci .
+
+      - name: Build mock backend image
+        run: docker build -t ai-gateway-mock-openai:ci tests/mock-openai-server
